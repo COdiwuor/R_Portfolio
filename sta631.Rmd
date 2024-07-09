@@ -1,0 +1,11 @@
+---
+title: "Project"
+description: |
+  Using Logistic Regression to Predict Heart Disease
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+The main aim of this project is to develop a logistic regression model that can be able to predict the posibility of heart disease to an individual. According to the WHO, 12 million people die annually from Heart-related conditions. Furthermore, over half of the total deaths in America are due to cardiovascular diseases. An early identification of such conditions can help patients make important decisions on lifestyle changes to improve their health status. I intend to use this project to highlight the risk factors of heart disease and predict the overall risk using logistic regression.
