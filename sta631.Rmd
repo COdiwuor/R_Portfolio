@@ -6,10 +6,207 @@ description: |
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(dplyr)
+library(cowplot)
+library(pROC)
+library(caret)
+library(janitor)
 ```
 
-The main aim of this project is to develop a logistic regression model that can be able to predict the posibility of heart disease to an individual. According to the WHO, 12 million people die annually from Heart-related conditions. Furthermore, over half of the total deaths in America are due to cardiovascular diseases. An early identification of such conditions can help patients make important decisions on lifestyle changes to improve their health status. I intend to use this project to highlight the risk factors of heart disease and predict the overall risk using logistic regression.
+The main aim of this project is to develop a logistic regression model that can be able to predict the possibility of heart disease to an individual. According to the WHO, 12 million people die annually from Heart-related conditions. Furthermore, over half of the total deaths in America are due to cardiovascular diseases. An early identification of such conditions can help patients make important decisions on lifestyle changes to improve their health status. I intend to use this project to highlight the risk factors of heart disease and predict the overall risk using logistic regression.
 
 ### Data Explanation
 
 The data was collected by the World Health Organization from the residents of Framingham, Massachusetts. It has over 4000 subjects and 16 variables.
+
+
+## Probability as a foundation of statistical modeling 
+
+Based on the previous exercises, probability was significantly helpful in quantifying uncertainty, especially on predicting outcomes based on available data. Probability helps explain the likelihood of different results/outputs emerging in various situations. For example, in the second mini-competition (later discussed below), the predicted inventory needs for the company is based on the assumption that if we use items that had more than 1000 sales, then some products will be needed more than others in the future sales. However, if we reduce the number of items sold to 500, the predicted outcomes are different from the previous predictions. Additionally, probability plays a key role in statistical inference especially in hypothesis testing. For example, in building statistical models and assessing performance, significance value (p-value) and confidence level - which in this case act as probability values help make statistical inferences from data. Finally, even in assessing the maximum likelihood of particular data falling in a specific group is made possible through the probability values such as in the case of models such as K-nearest neighbors. 
+
+Similarly, we applied probability in a logistic regression model for predicting the odds of getting diagnosed with heart disease for males (sex_male = 1)over that of females (sex_male = 0) is exp(0.5815) = 1.788687. In terms of percent change, we can say that the odds for males are 78.8% higher than the odds for females as shown in the data exploration below.
+
+### Data Dictionary
+
+The data has both demographic, behavioral and medical risk factors.\n\n
+
+**Demographic:** • Sex: male or female(Nominal) • Age: Age of the patient;(Continuous - Although the recorded ages have been truncated to whole numbers, the concept of age is continuous)
+
+**Behavioral**: • Current Smoker: whether or not the patient is a current smoker (Nominal) • Cigs Per Day: the number of cigarettes that the person smoked on average in one day.(can be considered continuous as one can have any number of cigarettes, even half a cigarette.)
+
+**Medical( history)**: • BP Meds: whether or not the patient was on blood pressure medication (Nominal) • Prevalent Stroke: whether or not the patient had previously had a stroke (Nominal) • Prevalent Hyp: whether or not the patient was hypertensive (Nominal) • Diabetes: whether or not the patient had diabetes (Nominal)
+
+**Medical(current)**: • Tot Chol: total cholesterol level (Continuous) • Sys BP: systolic blood pressure (Continuous) • Dia BP: diastolic blood pressure (Continuous) • BMI: Body Mass Index (Continuous) • Heart Rate: heart rate (Continuous - In medical research, variables such as heart rate though in fact discrete, yet are considered continuous because of large number of possible values.) • Glucose: glucose level (Continuous)
+Predict variable (desired target): • 10 year risk of coronary heart disease CHD (binary: “1”, means “Yes”, “0” means “No”)\n
+
+### Data Exploration
+
+Let me import the data to highlight some of the attributes of the data.
+
+```{r}
+framingham <- read.csv("framingham.csv")
+```
+
+
+```{r}
+head(framingham)
+```
+
+
+```{r}
+cat('Number of Rows:',nrow(framingham),'   ','Number of Fields:',ncol(framingham))
+```
+
+
+### Data Preprocessing
+
+This involves using the distinct function , then clean the null observation.
+
+The data below is pre processed data.
+
+```{r}
+framingham <- framingham |> 
+  distinct()
+
+#Then, Clean Null Observations
+colSums(is.na(framingham))
+```
+```{r}
+# Remove rows with missing values
+framingham <- na.omit(framingham)
+```
+
+### Visualizing Data
+
+We are going to visualize the data of the different data dictionary relationships
+
+```{r}
+framingham <- framingham |>  
+  mutate(male = as.character(male),
+        currentSmoker = as.character(currentSmoker),
+        prevalentHyp = as.character(prevalentHyp),
+        diabetes = as.character(diabetes),
+        TenYearCHD = as.character(TenYearCHD))
+
+```
+
+### 1) Visualize the relationship between TenYearCHD and Age/TotCHOL
+
+```{r}
+x <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = age, fill = TenYearCHD)) +
+  geom_boxplot()
+y <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = totChol, color = TenYearCHD)) +
+  geom_boxplot()
+p <- plot_grid(x, y) 
+title <- ggdraw() + draw_label("1. Relationship between TenYearCHD and Age / TotCHOL", fontface='bold')
+plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+
+```
+### 2) Visualize the relationship between TenYearCHD and sysBP/diaBP
+
+```{r}
+x <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = sysBP, fill = TenYearCHD)) +
+  geom_boxplot()
+y <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = diaBP, color = TenYearCHD)) +
+  geom_boxplot()
+p <- plot_grid(x, y) 
+title <- ggdraw() + draw_label("2. Relationship between TenYearCHD and sysBP / diaBP", fontface='bold')
+plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+
+```
+
+
+### 3) Visualize the relationship between TenYearCHD and BMI/HeartRate
+
+```{r}
+x <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = BMI, fill = TenYearCHD)) +
+  geom_boxplot()
+y <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = heartRate, color = TenYearCHD)) +
+  geom_boxplot()
+p <- plot_grid(x, y) 
+title <- ggdraw() + draw_label("3. Relationship between TenYearCHD and BMI / HeartRate", fontface='bold')
+plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+
+```
+
+### 4) Visualize the relationship between TenYearCHD and Glucose
+
+```{r}
+x <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = glucose, fill = TenYearCHD)) +
+  geom_boxplot()
+y <- ggplot(data = framingham, mapping = aes(x = as.factor(TenYearCHD), y = cigsPerDay, fill = TenYearCHD)) +
+  geom_boxplot()
+p <- plot_grid(x,y) 
+title <- ggdraw() + draw_label("4. Relationship between TenYearCHD and Glucose", fontface='bold')
+plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+
+```
+
+### 5) Visualize the relationship between TenYearCHD and Sex/Diabetes
+
+```{r}
+x <- ggplot(data = framingham) +
+  geom_count(mapping = aes(x = male, y = TenYearCHD))
+y <- ggplot(data = framingham) +
+  geom_count(mapping = aes(x = diabetes, y = TenYearCHD))
+p <- plot_grid(x, y) 
+title <- ggdraw() + draw_label("5. Relationship between TenYearCHD and Sex / Diabetes", fontface='bold')
+plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+
+```
+
+
+### Observations
+
+Plot 1: People with CHD have higher mean ages and choloesterol levels.
+
+Plot 2: People with CHD have higher mean systolic and diastolic blood pressures.
+
+Plot 3: People with CHD have a higher mean BMI, but very similar mean heart rates as people without CHD.
+
+Plot 4: People with CHD and without CHD have very similar mean glucose levels.
+
+Plot 5: More males than females have CHD and more non-diabetics have CHD compared to diabetics. This doesn’t take into account the population proportions.
+
+
+### Build and Evaluate the Logistic Regression Model
+We are going to build a Logistic Regression model to illustrate the model. The data was first split into train_idices and test_indices
+
+
+```{r}
+framingham <- framingham |>  
+  mutate(TenYearCHD = as.integer(TenYearCHD))
+
+```
+
+
+```{r}
+n_train <- round(0.7 * nrow(framingham))
+train_indices <- sample(1:nrow(framingham), n_train)
+framingham_train <- framingham[train_indices, ]
+framingham_test <- framingham[-train_indices, ]
+
+```
+
+### Trained model data
+```{r}
+##Train model
+
+dim(framingham_train)
+```
+### Tested model data
+```{r}
+## Test model
+dim(framingham_test)
+```
+
+```{r}
+log.fit = glm(TenYearCHD ~ ., data=framingham_train, family=binomial)
+round(summary(log.fit)$coefficients, 2)
+
+
+```
+
+**From the model above, the variables that significantly effect the probability of a patient having CHD are: Sex, Age, Cigs per day, systolic blood pressure, and glucose levels.**
