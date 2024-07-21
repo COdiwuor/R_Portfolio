@@ -1,7 +1,7 @@
 ---
 title: "Project"
 description: |
-  Using Logistic Regression to Predict Heart Disease
+  **Using Logistic Regression to Predict Heart Disease**
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +24,7 @@ The data was collected by the World Health Organization from the residents of Fr
 
 ## Probability as a foundation of statistical modeling 
 
-Based on the previous exercises, probability was significantly helpful in quantifying uncertainty, especially on predicting outcomes based on available data. Probability helps explain the likelihood of different results/outputs emerging in various situations. For example, in the second mini-competition (later discussed below), the predicted inventory needs for the company is based on the assumption that if we use items that had more than 1000 sales, then some products will be needed more than others in the future sales. However, if we reduce the number of items sold to 500, the predicted outcomes are different from the previous predictions. Additionally, probability plays a key role in statistical inference especially in hypothesis testing. For example, in building statistical models and assessing performance, significance value (p-value) and confidence level - which in this case act as probability values help make statistical inferences from data. Finally, even in assessing the maximum likelihood of particular data falling in a specific group is made possible through the probability values such as in the case of models such as K-nearest neighbors. 
+Based on the previous exercises such as simple linear regression, multiple linear regression logistic linear regression, probability was significantly helpful in quantifying uncertainty, especially on predicting outcomes based on available data. Probability helps explain the likelihood of different results/outputs emerging in various situations. Probability plays a key role in statistical inference especially in hypothesis testing. For example, in building statistical models and assessing performance, significance value (p-value) and confidence level - which in this case act as probability values help make statistical inferences from data. Finally, even in assessing the maximum likelihood of particular data falling in a specific group is made possible through the probability values such as in the case of models such as K-nearest neighbors. 
 
 Similarly, we applied probability in a logistic regression model for predicting the odds of getting diagnosed with heart disease for males (sex_male = 1)over that of females (sex_male = 0) is exp(0.5815) = 1.788687. In terms of percent change, we can say that the odds for males are 78.8% higher than the odds for females as shown in the data exploration below.
 
@@ -206,7 +206,111 @@ dim(framingham_test)
 log.fit = glm(TenYearCHD ~ ., data=framingham_train, family=binomial)
 round(summary(log.fit)$coefficients, 2)
 
-
 ```
 
 **From the model above, the variables that significantly effect the probability of a patient having CHD are: Sex, Age, Cigs per day, systolic blood pressure, and glucose levels.**
+
+
+```{r}
+log.probs <- predict(log.fit, type="response")
+log.preds = rep("No CHD", 2559)
+log.preds[log.probs>0.5] = "CHD"
+attach(framingham_train)
+table(log.preds,TenYearCHD)
+```
+
+```{r}
+cat("Training Error Rate:", round(((11+361)/2559)*100,2),"%")
+
+```
+
+Next we remove the insignificant variables and retain the model
+
+```{r}
+log.fit = glm(TenYearCHD ~ male + age + cigsPerDay + sysBP + glucose, data=framingham_train, family=binomial)
+round(summary(log.fit)$coefficients, 2)
+
+```
+
+### Observations
+
+```{r}
+cat("Sex: Being a male increases the odds of having heart disease by", round((exp(0.51)-1)*100,0), "%", "\n")
+```
+```{r}
+cat("Age: Every additional year in patient age increases the odds of heart disease by", round((exp(0.06)-1)*100,0), "%", "\n")
+```
+
+```{r}
+cat("Cigarrets Per Day: Every additional 5 daily ciggaret increases the odds of heart disease by", round(5*(exp(0.02)-1)*100,0), "%", "\n")
+```
+
+```{r}
+cat("Sys Blood Pressure: Every additional 10 units of Sys Blood Pressure increases the odds of heart disease by", round(10*(exp(0.02)-1)*100,0), "%", "\n")
+```
+
+```{r}
+cat("Glucose: Every additional 10 units of glucose levels increases the odds of heart disease by", round(10*(exp(0.01)-1)*100,0), "%")
+```
+
+```{r}
+log.probs <- predict(log.fit, type="response")
+log.preds = rep("No CHD", 2559)
+log.preds[log.probs>0.5] = "CHD"
+table(log.preds,TenYearCHD)
+
+```
+```{r}
+cat("Training Error Rate:", round(((17+362)/2559)*100,2),"%")
+```
+
+### Training the model
+
+```{r}
+roc(framingham_train$TenYearCHD, log.fit$fitted.values, plot=TRUE)
+```
+### Testing the model
+
+```{r}
+log.fit = glm(TenYearCHD ~ male + age + cigsPerDay + sysBP + glucose, data=framingham_test, family=binomial)
+roc(framingham_test$TenYearCHD, log.fit$fitted.values, plot=TRUE)
+
+```
+
+### Logistic regression equation
+
+P=eβ0+β1X1/1+eβ0+β1X1P=eβ0+β1X1/1+eβ0+β1X1
+When all variables are included:
+logit(p)=log(p/(1−p))=β0+β1∗Sexmale+β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucoselogit(p)=log(p/(1−p))=β0+β1∗Sexmale+β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucose
+
+
+Interpreting the results: Odds Ratio, Confidence Intervals and P-values
+
+• This fitted model shows that, holding all other features constant, the odds of getting diagnosed with heart disease for males (sex_male = 1)over that of females (sex_male = 0) is exp(0.5815) = 1.788687. In terms of percent change, we can say that the odds for males are 78.8% higher than the odds for females.
+
+• The coefficient for age says that, holding all others constant, we will see 7% increase in the odds of getting diagnosed with CDH for a one year increase in age since exp(0.0655) = 1.067644.
+
+• Similarly , with every extra cigarette one smokes thers is a 2% increase in the odds of CDH.
+
+• For Total cholesterol level and glucose level there is no significant change.
+
+• There is a 1.7% increase in odds for every unit increase in systolic Blood Pressure.
+
+Model Evaluation - Statistics
+
+From the above statistics it is clear that the model is highly specific than sensitive. The negative values are predicted more accurately than the positives.
+
+Predicted probabilities of 0 (No Coronary Heart Disease) and 1 ( Coronary Heart Disease: Yes) for the test data with a default classification threshold of 0.5
+
+Lower the threshold
+
+Since the model is predicting Heart disease too many type II errors is not advisable. A False Negative ( ignoring the probability of disease when there actually is one) is more dangerous than a False Positive in this case. Hence in order to increase the sensitivity, threshold can be lowered.
+
+**Conclusions**
+
+• All attributes selected after the elimination process show P-values lower than 5% and thereby suggesting significant role in the Heart disease prediction.
+
+• Men seem to be more susceptible to heart disease than women. Increase in age, number of cigarettes smoked per day and systolic Blood Pressure also show increasing odds of having heart disease.
+
+• Total cholesterol shows no significant change in the odds of CHD. This could be due to the presence of ’good cholesterol(HDL) in the total cholesterol reading. Glucose too causes a very negligible change in odds (0.2%)
+
