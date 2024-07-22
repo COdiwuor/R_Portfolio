@@ -281,7 +281,8 @@ roc(framingham_test$TenYearCHD, log.fit$fitted.values, plot=TRUE)
 
 P=eβ0+β1X1/1+eβ0+β1X1P=eβ0+β1X1/1+eβ0+β1X1
 When all variables are included:
-logit(p)=log(p/(1−p))=β0+β1∗Sexmale+β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucoselogit(p)=log(p/(1−p))=β0+β1∗Sexmale+β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucose
+logit(p)=log(p/(1−p))=β0+β1∗Sexmale+β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucoselogit(p)=log(p/(1−p))=β0+β1∗Sexmale
++β2∗age+β3∗cigsPerDay+β4∗totChol+β5∗sysBP+β6∗glucose
 
 
 Interpreting the results: Odds Ratio, Confidence Intervals and P-values
