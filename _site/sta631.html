@@ -2259,29 +2259,29 @@ Predict variable (desired target): • 10 year risk of coronary heart disease CH
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>                Estimate Std. Error z value Pr(&gt;|z|)
-(Intercept)        -8.89       0.86  -10.31     0.00
-male1               0.50       0.13    3.85     0.00
-age                 0.06       0.01    8.14     0.00
-education          -0.01       0.06   -0.14     0.89
-currentSmoker1      0.17       0.19    0.89     0.37
-cigsPerDay          0.01       0.01    1.84     0.07
-BPMeds              0.12       0.27    0.44     0.66
-prevalentStroke     0.74       0.60    1.24     0.22
-prevalentHyp1       0.21       0.17    1.23     0.22
-diabetes1           0.21       0.36    0.58     0.56
-totChol             0.00       0.00    1.81     0.07
-sysBP               0.02       0.00    3.55     0.00
-diaBP               0.00       0.01   -0.30     0.76
-BMI                 0.00       0.02    0.31     0.76
-heartRate           0.00       0.00    0.02     0.98
-glucose             0.01       0.00    2.35     0.02</code></pre>
+(Intercept)        -8.33       0.88   -9.47     0.00
+male1               0.60       0.13    4.58     0.00
+age                 0.06       0.01    7.76     0.00
+education          -0.07       0.06   -1.20     0.23
+currentSmoker1      0.25       0.19    1.31     0.19
+cigsPerDay          0.01       0.01    1.78     0.07
+BPMeds              0.15       0.28    0.54     0.59
+prevalentStroke     1.27       0.61    2.09     0.04
+prevalentHyp1       0.21       0.17    1.28     0.20
+diabetes1           0.01       0.38    0.02     0.98
+totChol             0.00       0.00    2.55     0.01
+sysBP               0.02       0.00    3.76     0.00
+diaBP               0.00       0.01   -0.60     0.55
+BMI                 0.01       0.02    0.74     0.46
+heartRate          -0.01       0.01   -2.31     0.02
+glucose             0.01       0.00    2.93     0.00</code></pre>
 </div>
 <p><strong>From the model above, the variables that significantly effect the probability of a patient having CHD are: Sex, Age, Cigs per day, systolic blood pressure, and glucose levels.</strong></p>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>         TenYearCHD
 log.preds    0    1
-   CHD      19   34
-   No CHD 2149  357</code></pre>
+   CHD      15   38
+   No CHD 2163  343</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>Training Error Rate: 14.54 %</code></pre>
@@ -2289,12 +2289,12 @@ log.preds    0    1
 <p>Next we remove the insignificant variables and retain the model</p>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>            Estimate Std. Error z value Pr(&gt;|z|)
-(Intercept)    -8.80       0.50  -17.55        0
-male1           0.46       0.13    3.69        0
-age             0.07       0.01    8.83        0
+(Intercept)    -8.90       0.51  -17.49        0
+male1           0.59       0.13    4.58        0
+age             0.07       0.01    8.88        0
 cigsPerDay      0.02       0.01    3.76        0
-sysBP           0.02       0.00    7.54        0
-glucose         0.01       0.00    3.61        0</code></pre>
+sysBP           0.02       0.00    7.20        0
+glucose         0.01       0.00    3.83        0</code></pre>
 </div>
 <h3 id="observations-1">Observations</h3>
 <div class="layout-chunk" data-layout="l-body">
@@ -2315,8 +2315,8 @@ glucose         0.01       0.00    3.61        0</code></pre>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>         TenYearCHD
 log.preds    0    1
-   CHD      21   33
-   No CHD 2147  358</code></pre>
+   CHD      18   34
+   No CHD 2160  347</code></pre>
 </div>
 <div class="layout-chunk" data-layout="l-body">
 <pre><code>Training Error Rate: 14.81 %</code></pre>
@@ -2328,8 +2328,8 @@ log.preds    0    1
 Call:
 roc.default(response = framingham_train$TenYearCHD, predictor = log.fit$fitted.values,     plot = TRUE)
 
-Data: log.fit$fitted.values in 2169 controls (framingham_train$TenYearCHD 0) &lt; 392 cases (framingham_train$TenYearCHD 1).
-Area under the curve: 0.7377</code></pre>
+Data: log.fit$fitted.values in 2179 controls (framingham_train$TenYearCHD 0) &lt; 382 cases (framingham_train$TenYearCHD 1).
+Area under the curve: 0.7415</code></pre>
 </div>
 <h3 id="testing-the-model">Testing the model</h3>
 <div class="layout-chunk" data-layout="l-body">
@@ -2338,8 +2338,8 @@ Area under the curve: 0.7377</code></pre>
 Call:
 roc.default(response = framingham_test$TenYearCHD, predictor = log.fit$fitted.values,     plot = TRUE)
 
-Data: log.fit$fitted.values in 932 controls (framingham_test$TenYearCHD 0) &lt; 165 cases (framingham_test$TenYearCHD 1).
-Area under the curve: 0.7332</code></pre>
+Data: log.fit$fitted.values in 922 controls (framingham_test$TenYearCHD 0) &lt; 175 cases (framingham_test$TenYearCHD 1).
+Area under the curve: 0.7222</code></pre>
 </div>
 <h3 id="logistic-regression-equation">Logistic regression equation</h3>
 <p>P=eβ0+β1X1/1+eβ0+β1X1P=eβ0+β1X1/1+eβ0+β1X1
